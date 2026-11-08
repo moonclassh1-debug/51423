@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A0F14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MOON AUDIO">
+<meta name="format-detection" content="telephone=no">
+<title>MOON AUDIO</title>
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="apple-touch-icon.png">
+<style>
+  :root{
+    --bg:#0A0F14; --card:#121A23; --soft:#1C2733; --primary:#7C5CFF; --cyan:#22D3EE;
+    --text:#EAF0F6; --muted:#8FA1B3; --good:#34D399; --warn:#FBBF24; --bad:#F87171;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{background:var(--bg);-webkit-text-size-adjust:100%}
+  body{
+    margin:0;color:var(--text);background:var(--bg);
+    font:15px/1.45 -apple-system,BlinkMacSystemFont,"Noto Sans Georgian","Segoe UI",system-ui,sans-serif;
+    padding:calc(env(safe-area-inset-top) + 18px) calc(env(safe-area-inset-right) + 16px)
+            calc(env(safe-area-inset-bottom) + 36px) calc(env(safe-area-inset-left) + 16px);
+  }
+  main{max-width:520px;margin:0 auto}
+  h1{font-size:30px;line-height:1.1;margin:0 0 4px;font-weight:800;letter-spacing:.5px}
+  .sub{color:var(--muted);font-size:14px;margin:0}
+  .card{background:var(--card);border-radius:18px;padding:14px 16px;margin-top:12px}
+  .cap{color:var(--muted);font-size:13px;margin:0 0 6px}
+  .txt{margin:0;font-size:14px}
+  .small{font-size:12.5px;color:var(--muted);margin:8px 0 0}
+  .row{display:flex;align-items:center;gap:10px}
+  .grow{flex:1;min-width:0}
+  .btn{
+    display:block;width:100%;min-height:46px;margin-top:8px;border:0;border-radius:12px;
+    background:var(--primary);color:#fff;font:inherit;font-size:14px;font-weight:600;
+    padding:10px 14px;text-align:center;cursor:pointer;
+  }
+  .btn.soft{background:var(--soft)}
+  .btn:active{opacity:.8}
+  .list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+  .item{
+    border:2px solid var(--soft);background:var(--card);border-radius:12px;padding:10px 12px;
+    text-align:left;color:var(--text);font:inherit;cursor:pointer;width:100%;
+  }
+  .item.sel{border-color:var(--primary);background:var(--soft)}
+  .item b{display:block;font-size:15px}
+  .item span{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+  .tag{color:var(--cyan)}
+  .state{font-size:13.5px;margin:0}
+  .good{color:var(--good)} .warn{color:var(--warn)} .muted{color:var(--muted)}
+  canvas{display:block;width:100%;height:150px;background:var(--bg);border-radius:12px;margin:10px 0 2px}
+  .slider{padding:8px 0 2px}
+  .slider .head{display:flex;justify-content:space-between;font-size:14px}
+  .slider .head .v{color:var(--cyan);font-weight:700}
+  input[type=range]{width:100%;margin:8px 0 2px;accent-color:var(--primary);height:28px}
+  textarea{
+    width:100%;min-height:64px;background:var(--bg);color:var(--text);border:2px solid var(--soft);
+    border-radius:12px;padding:10px;font:13px/1.35 ui-monospace,Menlo,monospace;resize:vertical;
+  }
+  details summary{cursor:pointer;color:var(--cyan);font-size:14px;padding:6px 0}
+  .seg{display:flex;background:var(--soft);border-radius:12px;padding:3px;margin-top:8px}
+  .seg button{
+    flex:1;border:0;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:600;
+    min-height:40px;border-radius:10px;cursor:pointer;
+  }
+  .seg button.on{background:var(--primary);color:#fff}
+  audio{width:100%;margin-top:10px}
+  ol{margin:6px 0 0;padding-left:20px;font-size:14px} ol li{margin:4px 0}
+  #toast{
+    position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 22px);transform:translateX(-50%);
+    background:var(--soft);color:var(--text);padding:10px 16px;border-radius:12px;font-size:14px;
+    max-width:90%;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9;
+  }
+  #toast.show{opacity:1}
+  .hide{display:none!important}
+  .file{position:relative;overflow:hidden}
+  .file input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+</style>
+</head>
+<body>
+<main>
+  <h1>MOON AUDIO</h1>
+  <p class="sub">iPhone / iPad · პროფილები Android-იდან, ინსტალაციის გარეშე</p>
+
+  <section class="card">
+    <p class="cap">რა შეუძლია iPhone-ზე და რა არა</p>
+    <p class="txt">გვერდი Android აპიდან იღებს შენს ხმის პროფილებს (QR ან ბმული) და ამ iPhone-ზე იმახსოვრებს.</p>
+    <p class="small">iOS-ზე სხვა აპების ხმას, მაგალითად თამაშის, ვერავინ გადაამუშავებს: ეს Apple-ის შეზღუდვაა და ინსტალაციით არ იცვლება. ამიტომ აქ ხმა მუშავდება მხოლოდ ამავე გვერდში დაკრულ აუდიოზე (ტესტური ხმა ან შენი ფაილი).</p>
+  </section>
+
+  <section class="card">
+    <p class="cap">Android-იდან მიღებული</p>
+    <p class="state" id="syncState"></p>
+    <div class="list" id="androidList"></div>
+    <details id="manual">
+      <summary>ხელით ჩასმა (ბმული ან კოდი)</summary>
+      <textarea id="codeIn" placeholder="ჩააკოპირე ბმული, რომელიც Android აპიდან გამოგიგზავნე" spellcheck="false" autocapitalize="off" autocorrect="off"></textarea>
+      <button class="btn soft" id="pasteBtn" type="button">ბუფერიდან ჩასმა</button>
+      <button class="btn" id="importBtn" type="button">მიღება</button>
+    </details>
+  </section>
+
+  <section class="card">
+    <p class="cap">პროფილები</p>
+    <div class="list" id="presetList"></div>
+  </section>
+
+  <section class="card">
+    <p class="cap">პროფილის დაზუსტება</p>
+    <div id="curName" style="font-weight:700;font-size:16px"></div>
+    <div id="curDesc" class="small" style="margin-top:2px"></div>
+    <canvas id="curve" aria-label="ეკვალაიზერის მრუდი"></canvas>
+    <div id="sliders"></div>
+    <button class="btn" id="saveMine" type="button">შენახვა ამ iPhone-ზე</button>
+    <button class="btn soft" id="resetBtn" type="button">საწყის მნიშვნელობებზე დაბრუნება</button>
+  </section>
+
+  <section class="card">
+    <p class="cap">მოსმენა და ტესტი</p>
+    <p class="txt">აქ ხმა მუშავდება მიახლოებით, ბრაუზერის აუდიო-ფილტრებით. დაიწყე დაბალი ხმით.</p>
+    <button class="btn" id="noiseBtn" type="button">▶ ტესტური ხმა (ვარდისფერი ხმაური)</button>
+    <div class="btn soft file" role="button">
+      ფაილის არჩევა (მუსიკა, ვიდეო)
+      <input type="file" id="fileIn" accept="audio/*,video/*">
+    </div>
+    <audio id="player" controls playsinline></audio>
+    <div class="seg" id="abSeg">
+      <button type="button" data-ab="on" class="on">პროფილი ჩართულია</button>
+      <button type="button" data-ab="off">გამორთულია</button>
+    </div>
+    <div class="slider">
+      <div class="head"><span>საერთო ხმა</span><span class="v" id="volVal">50%</span></div>
+      <input type="range" id="vol" min="0" max="100" value="50">
+    </div>
+  </section>
+
+  <section class="card" id="installCard">
+    <p class="cap">საწყის ეკრანზე დამატება</p>
+    <ol>
+      <li>დააჭირე Safari-ში <b>გაზიარებას</b> (კვადრატი ისრით).</li>
+      <li>აირჩიე <b>საწყის ეკრანზე დამატება</b>.</li>
+    </ol>
+    <p class="small">დაამატე სწორედ იმ გვერდიდან, რომელიც QR-ით გაიხსნა: მაშინ ხატულა მონაცემებსაც ინახავს. შეცვლილი პროფილი რომ მიიღო, Android აპში QR თავიდან აჩვენე და დაასკანერე.</p>
+  </section>
+</main>
+<div id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- პროფილები (იგივე, რაც Android აპშია) ---------- */
+  var FREQS = [60, 230, 910, 3600, 14000];
+  var NAMES = ['60 ჰც · ბასი', '230 ჰც · სიმძიმე', '910 ჰც · შუა', '3,6 კჰც · ნაბიჯები', '14 კჰც · სიმკვეთრე'];
+
+  function clamp(n, a, b) {
+    n = Math.round(Number(n));
+    if (!isFinite(n)) n = 0;
+    return Math.min(b, Math.max(a, n));
+  }
+  function mk(id, name, desc, a) {
+    return {
+      id: id, name: name, desc: desc,
+      gains: [0, 1, 2, 3, 4].map(function (i) { return clamp(a[i], -12, 12); }),
+      bass: clamp(a[5], 0, 100), virt: clamp(a[6], 0, 100), loud: clamp(a[7], 0, 15)
+    };
+  }
+  function clone(p) { return mk(p.id, p.name, p.desc, p.gains.concat([p.bass, p.virt, p.loud])); }
+
+  var PRESETS = [
+    mk('fps', 'FPS · ნაბიჯები', 'ნაბიჯები და ტყვიების მიმართულება უფრო ნათლად ისმის, აფეთქებების ბუბუნი ნაკლებია.', [-5, -3, 0, 5, 4, 0, 70, 6]),
+    mk('br', 'Battle Royale', 'შორეული ნაბიჯები და სროლა სივრცული ეფექტით, მსუბუქი ბასით.', [-3, -2, 1, 5, 3, 10, 60, 5]),
+    mk('race', 'რბოლა და მოქმედება', 'ძლიერი ბასი: ძრავები და აფეთქებები სავსე და მძიმე ჟღერს.', [6, 3, 0, 1, 3, 55, 30, 3]),
+    mk('moba', 'MOBA · ბალანსი', 'ბალანსირებული ხმა ეფექტებისთვის და კომენტატორისთვის.', [1, 0, 0, 2, 1, 15, 20, 3]),
+    mk('voice', 'ჩატი · ხმა', 'მეგობრების ხმა ჩატში ნათლად ისმის, თამაშის ხმა ოდნავ უკანაა.', [-4, -1, 3, 4, 0, 0, 0, 4]),
+    mk('flat', 'სუფთა', 'დამატებითი დამუშავების გარეშე.', [0, 0, 0, 0, 0, 0, 0, 0])
+  ];
+  function presetById(id) {
+    for (var i = 0; i < PRESETS.length; i++) if (PRESETS[i].id === id) return PRESETS[i];
+    return null;
+  }
+
+  function gainAt(p, hz) {
+    var f = FREQS;
+    if (hz <= f[0]) return p.gains[0];
+    if (hz >= f[4]) return p.gains[4];
+    for (var i = 0; i < 4; i++) {
+      if (hz >= f[i] && hz <= f[i + 1]) {
+        var t = (Math.log(hz) - Math.log(f[i])) / (Math.log(f[i + 1]) - Math.log(f[i]));
+        return p.gains[i] + (p.gains[i + 1] - p.gains[i]) * t;
+      }
+    }
+    return 0;
+  }
+
+  /* ---------- შენახვა ---------- */
+  var K_SYNC = 'moonaudio.sync', K_MINE = 'moonaudio.mine', K_WORK = 'moonaudio.work';
+  function lsGet(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* სივრცე არაა */ } }
+
+  /* ---------- Android-იდან მიღებული ბმულის წაკითხვა ---------- */
+  function decodePayload(str) {
+    var code = String(str || '').trim();
+    var m = code.match(/[?&#]d=([A-Za-z0-9_\-]+)/);
+    if (m) code = m[1];
+    if (!/^[A-Za-z0-9_\-]+$/.test(code)) return null;
+    var b = code.replace(/-/g, '+').replace(/_/g, '/');
+    while (b.length % 4) b += '=';
+    var o;
+    try {
+      var bin = atob(b);
+      var bytes = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      o = JSON.parse(new TextDecoder('utf-8').decode(bytes));
+    } catch (e) { return null; }
+    if (!o || o.v !== 1) return null;
+
+    var res = { sel: typeof o.s === 'string' ? o.s.slice(0, 20) : 'fps', custom: null, devs: [], raw: code };
+    if (Array.isArray(o.c) && o.c.length >= 8) {
+      res.custom = mk('custom', 'ჩემი პროფილი', 'ხელით მორგებული Android-ზე', o.c);
+    }
+    if (Array.isArray(o.d)) {
+      o.d.slice(0, 20).forEach(function (d) {
+        if (!d || !Array.isArray(d.a) || d.a.length < 8) return;
+        var id = String(d.i || 'custom').slice(0, 20);
+        var pr = presetById(id);
+        var prof = mk(id, pr ? pr.name : 'ჩემი პროფილი', pr ? pr.desc : 'ხელით მორგებული', d.a);
+        res.devs.push({ name: String(d.n || '').slice(0, 40) || 'ყურსასმენი', profile: prof });
+      });
+    }
+    return res;
+  }
+
+  function androidSelection(data) {
+    if (data.sel === 'custom' && data.custom) return data.custom;
+    return presetById(data.sel) || PRESETS[0];
+  }
+
+  /* ---------- მდგომარეობა ---------- */
+  var sync = lsGet(K_SYNC);          // {at, data}
+  var mine = lsGet(K_MINE);          // შენახული პროფილი ამ iPhone-ზე
+  var work = null;                   // რასაც ახლა ვუსმენთ/ვასწორებთ
+  var base = null;                   // საწყისი მნიშვნელობა "დაბრუნებისთვის"
+  var activeKey = '';                // რომელი ღილაკია არჩეული
+
+  var $ = function (id) { return document.getElementById(id); };
+  var toastTimer = null;
+  function toast(s) {
+    var t = $('toast');
+    t.textContent = s;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2600);
+  }
+
+  function importCode(str, silent) {
+    var data = decodePayload(str);
+    if (!data) { if (!silent) toast('ბმულში მონაცემები ვერ წავიკითხე'); return false; }
+    var old = sync && sync.data ? sync.data.raw : null;
+    if (old === data.raw) { sync = { at: sync.at, data: data }; return 'same'; }
+    sync = { at: Date.now(), data: data };
+    lsSet(K_SYNC, sync);
+    return 'new';
+  }
+
+  /* ---------- ეკრანის აგება ---------- */
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  function itemBtn(key, title, desc, onClick) {
+    var b = el('button', 'item' + (key === activeKey ? ' sel' : ''));
+    b.type = 'button';
+    b.dataset.key = key;
+    b.appendChild(el('b', null, title));
+    if (desc) b.appendChild(el('span', null, desc));
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  function choose(key, profile) {
+    activeKey = key;
+    base = clone(profile);
+    work = clone(profile);
+    lsSet(K_WORK, { key: key, profile: work });
+    renderLists();
+    bindWork();
+    applyAudio();
+  }
+
+  function renderLists() {
+    var st = $('syncState'), al = $('androidList');
+    al.textContent = '';
+    if (sync && sync.data) {
+      var d = sync.data;
+      st.className = 'state good';
+      st.textContent = '✅ მიღებულია ' + new Date(sync.at).toLocaleString('ka-GE');
+      var sel = androidSelection(d);
+      al.appendChild(itemBtn('a:sel', 'Android-ზე ახლა არჩეულია', sel.name, function () { choose('a:sel', sel); }));
+      if (d.custom) al.appendChild(itemBtn('a:custom', 'ჩემი პროფილი (Android)', d.custom.desc, function () { choose('a:custom', d.custom); }));
+      d.devs.forEach(function (dv, i) {
+        al.appendChild(itemBtn('a:dev' + i, '🎧 ' + dv.name, dv.profile.name, function () { choose('a:dev' + i, dv.profile); }));
+      });
+      if (!d.devs.length) {
+        var n = el('p', 'small', 'ყურსასმენზე დამახსოვრებული პროფილი ჯერ არ არის. Android აპში დააჭირე „ამ ყურსასმენზე დამახსოვრება".');
+        al.appendChild(n);
+      }
+    } else {
+      st.className = 'state warn';
+      st.textContent = 'ჯერ არაფერი მიგიღია. Android აპში დააჭირე „QR კოდის ჩვენება" და დაასკანერე iPhone-ის კამერით.';
+    }
+
+    var pl = $('presetList');
+    pl.textContent = '';
+    PRESETS.forEach(function (p) {
+      pl.appendChild(itemBtn('p:' + p.id, p.name, p.desc, function () { choose('p:' + p.id, p); }));
+    });
+    if (mine) {
+      pl.appendChild(itemBtn('mine', 'ჩემი iPhone პროფილი', 'ამ iPhone-ზე შენახული', function () { choose('mine', mine); }));
+    }
+  }
+
+  var rows = [];
+  function buildSliders() {
+    var box = $('sliders');
+    var defs = [];
+    NAMES.forEach(function (n, i) {
+      defs.push({ t: n, min: -12, max: 12, fmt: function (v) { return (v > 0 ? '+' : '') + v + ' dB'; }, get: function () { return work.gains[i]; }, set: function (v) { work.gains[i] = v; } });
+    });
+    defs.push({ t: 'ბასის გაძლიერება', min: 0, max: 100, fmt: function (v) { return v + '%'; }, get: function () { return work.bass; }, set: function (v) { work.bass = v; } });
+    defs.push({ t: '3D / სივრცე', min: 0, max: 100, fmt: function (v) { return v + '%'; }, get: function () { return work.virt; }, set: function (v) { work.virt = v; } });
+    defs.push({ t: 'ხმამაღლობა (ჩუმი ხმების გაძლიერება)', min: 0, max: 15, fmt: function (v) { return '+' + v + ' dB'; }, get: function () { return work.loud; }, set: function (v) { work.loud = v; } });
+
+    defs.forEach(function (d) {
+      var wrap = el('div', 'slider');
+      var head = el('div', 'head');
+      var val = el('span', 'v', '');
+      head.appendChild(el('span', null, d.t));
+      head.appendChild(val);
+      var inp = document.createElement('input');
+      inp.type = 'range'; inp.min = d.min; inp.max = d.max; inp.step = 1;
+      inp.addEventListener('input', function () {
+        var v = parseInt(inp.value, 10);
+        d.set(v);
+        val.textContent = d.fmt(v);
+        work.id = 'custom'; work.name = 'ჩემი პროფილი'; work.desc = 'ხელით მორგებული';
+        $('curName').textContent = work.name;
+        $('curDesc').textContent = work.desc;
+        drawCurve();
+        applyAudio();
+        scheduleSaveWork();
+      });
+      wrap.appendChild(head);
+      wrap.appendChild(inp);
+      box.appendChild(wrap);
+      rows.push({ d: d, inp: inp, val: val });
+    });
+  }
+
+  function bindWork() {
+    if (!work) return;
+    $('curName').textContent = work.name;
+    $('curDesc').textContent = work.desc;
+    rows.forEach(function (r) {
+      var v = r.d.get();
+      r.inp.value = v;
+      r.val.textContent = r.d.fmt(v);
+    });
+    drawCurve();
+  }
+
+  var saveTimer = null;
+  function scheduleSaveWork() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () { lsSet(K_WORK, { key: activeKey, profile: work }); }, 400);
+  }
+
+  /* ---------- მრუდი ---------- */
+  function drawCurve() {
+    var cv = $('curve');
+    if (!work) return;
+    var dpr = window.devicePixelRatio || 1;
+    var w = cv.clientWidth, h = cv.clientHeight;
+    if (!w || !h) return;
+    cv.width = Math.round(w * dpr);
+    cv.height = Math.round(h * dpr);
+    var g = cv.getContext('2d');
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, w, h);
+    var padL = 30, padR = 8, padT = 8, padB = 18;
+    var pw = w - padL - padR, ph = h - padT - padB;
+    var lmin = Math.log(20), lmax = Math.log(20000);
+    function X(hz) { return padL + (Math.log(hz) - lmin) / (lmax - lmin) * pw; }
+    function Y(db) { return padT + (12 - db) / 24 * ph; }
+
+    g.font = '10px -apple-system, sans-serif';
+    g.fillStyle = '#8FA1B3';
+    g.strokeStyle = '#1C2733';
+    g.lineWidth = 1;
+    [-12, -6, 0, 6, 12].forEach(function (db) {
+      g.beginPath(); g.moveTo(padL, Y(db)); g.lineTo(w - padR, Y(db)); g.stroke();
+      g.textAlign = 'right'; g.fillText((db > 0 ? '+' : '') + db, padL - 4, Y(db) + 3);
+    });
+    [[100, '100'], [1000, '1k'], [10000, '10k']].forEach(function (f) {
+      g.beginPath(); g.moveTo(X(f[0]), padT); g.lineTo(X(f[0]), padT + ph); g.stroke();
+      g.textAlign = 'center'; g.fillText(f[1], X(f[0]), h - 4);
+    });
+
+    g.strokeStyle = '#22D3EE';
+    g.lineWidth = 2.5;
+    g.lineJoin = 'round';
+    g.beginPath();
+    for (var i = 0; i <= 120; i++) {
+      var hz = Math.exp(lmin + (lmax - lmin) * i / 120);
+      var x = X(hz), y = Y(gainAt(work, hz));
+      if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
+    }
+    g.stroke();
+    g.fillStyle = '#7C5CFF';
+    FREQS.forEach(function (f, k) {
+      g.beginPath(); g.arc(X(f), Y(work.gains[k]), 4, 0, Math.PI * 2); g.fill();
+    });
+  }
+
+  /* ---------- აუდიო (Web Audio) ---------- */
+  var ctx = null, nodes = null, bypass = false;
+  var noiseSrc = null, mediaSrc = null;
+
+  function ensureCtx() {
+    if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return true; }
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) { toast('ამ ბრაუზერში აუდიო-ფილტრები არ არის'); return false; }
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) { /* ძველი iOS */ }
+    ctx = new AC();
+    if (ctx.state === 'suspended') ctx.resume();
+
+    var input = ctx.createGain();
+    input.channelCount = 2; input.channelCountMode = 'explicit'; input.channelInterpretation = 'speakers';
+
+    var eq = FREQS.map(function (f, i) {
+      var b = ctx.createBiquadFilter();
+      b.type = i === 0 ? 'lowshelf' : (i === 4 ? 'highshelf' : 'peaking');
+      b.frequency.value = i === 0 ? 110 : (i === 4 ? 9000 : f);
+      b.Q.value = 1;
+      b.gain.value = 0;
+      return b;
+    });
+    var bass = ctx.createBiquadFilter();
+    bass.type = 'lowshelf'; bass.frequency.value = 90; bass.gain.value = 0;
+
+    var split = ctx.createChannelSplitter(2), merge = ctx.createChannelMerger(2);
+    var aL = ctx.createGain(), bL = ctx.createGain(), aR = ctx.createGain(), bR = ctx.createGain();
+    split.connect(aL, 0); aL.connect(merge, 0, 0);
+    split.connect(bL, 0); bL.connect(merge, 0, 1);
+    split.connect(aR, 1); aR.connect(merge, 0, 1);
+    split.connect(bR, 1); bR.connect(merge, 0, 0);
+
+    var comp = ctx.createDynamicsCompressor();
+    var makeup = ctx.createGain();
+    var lim = ctx.createDynamicsCompressor();
+    lim.threshold.value = -2; lim.knee.value = 0; lim.ratio.value = 20;
+    lim.attack.value = 0.003; lim.release.value = 0.1;
+    var master = ctx.createGain();
+
+    var prev = input;
+    eq.forEach(function (f) { prev.connect(f); prev = f; });
+    prev.connect(bass);
+    bass.connect(split);
+    merge.connect(comp);
+    comp.connect(makeup);
+    makeup.connect(lim);
+    lim.connect(master);
+    master.connect(ctx.destination);
+
+    nodes = { input: input, eq: eq, bass: bass, aL: aL, bL: bL, aR: aR, bR: bR, comp: comp, makeup: makeup, master: master };
+    setVolume();
+    applyAudio();
+    return true;
+  }
+
+  function applyAudio() {
+    if (!nodes || !work) return;
+    var t = ctx.currentTime, tc = 0.03, on = !bypass;
+    nodes.eq.forEach(function (f, i) { f.gain.setTargetAtTime(on ? work.gains[i] : 0, t, tc); });
+    nodes.bass.gain.setTargetAtTime(on ? work.bass * 0.12 : 0, t, tc);
+    var w = on ? 1 + work.virt / 100 * 1.2 : 1;
+    var a = (1 + w) / 2, b = (1 - w) / 2;
+    nodes.aL.gain.setTargetAtTime(a, t, tc); nodes.aR.gain.setTargetAtTime(a, t, tc);
+    nodes.bL.gain.setTargetAtTime(b, t, tc); nodes.bR.gain.setTargetAtTime(b, t, tc);
+    var L = on ? work.loud : 0;
+    nodes.comp.threshold.value = L > 0 ? -45 : 0;
+    nodes.comp.knee.value = 20;
+    nodes.comp.ratio.value = L > 0 ? 1 + L / 15 * 5 : 1;
+    nodes.comp.attack.value = 0.01;
+    nodes.comp.release.value = 0.25;
+    nodes.makeup.gain.setTargetAtTime(Math.pow(10, L * 0.6 / 20), t, tc);
+  }
+
+  function setVolume() {
+    var v = parseInt($('vol').value, 10) / 100;
+    $('volVal').textContent = Math.round(v * 100) + '%';
+    if (nodes) nodes.master.gain.setTargetAtTime(v * v, ctx.currentTime, 0.03);
+  }
+
+  function pinkBuffer() {
+    var sr = ctx.sampleRate, len = Math.floor(sr * 6), buf = ctx.createBuffer(2, len, sr);
+    for (var c = 0; c < 2; c++) {
+      var d = buf.getChannelData(c);
+      var b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      for (var i = 0; i < len; i++) {
+        var wn = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + wn * 0.0555179; b1 = 0.99332 * b1 + wn * 0.0750759;
+        b2 = 0.96900 * b2 + wn * 0.1538520; b3 = 0.86650 * b3 + wn * 0.3104856;
+        b4 = 0.55000 * b4 + wn * 0.5329522; b5 = -0.7616 * b5 - wn * 0.0168980;
+        d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + wn * 0.5362) * 0.055;
+        b6 = wn * 0.115926;
+      }
+      /* მარყუჟის კიდეებზე ნაზი გადასვლა, რომ ჩხაკუნი არ იყოს */
+      var fade = Math.floor(sr * 0.05);
+      for (var k = 0; k < fade; k++) {
+        var f = k / fade;
+        d[k] *= f; d[len - 1 - k] *= f;
+      }
+    }
+    return buf;
+  }
+
+  function stopNoise() {
+    if (noiseSrc) { try { noiseSrc.stop(); } catch (e) { /* უკვე გაჩერებულია */ } noiseSrc.disconnect(); noiseSrc = null; }
+    $('noiseBtn').textContent = '▶ ტესტური ხმა (ვარდისფერი ხმაური)';
+  }
+
+  function toggleNoise() {
+    if (!ensureCtx()) return;
+    if (noiseSrc) { stopNoise(); return; }
+    $('player').pause();
+    var s = ctx.createBufferSource();
+    s.buffer = pinkBuffer();
+    s.loop = true;
+    s.connect(nodes.input);
+    s.start();
+    noiseSrc = s;
+    $('noiseBtn').textContent = '■ ტესტური ხმის გაჩერება';
+  }
+
+  function onFile(ev) {
+    var f = ev.target.files && ev.target.files[0];
+    if (!f) return;
+    if (!ensureCtx()) return;
+    stopNoise();
+    var p = $('player');
+    if (!mediaSrc) {
+      try {
+        mediaSrc = ctx.createMediaElementSource(p);
+        mediaSrc.connect(nodes.input);
+      } catch (e) { toast('ფაილის დაკვრა ვერ მოხერხდა'); return; }
+    }
+    try { if (p.dataset.url) URL.revokeObjectURL(p.dataset.url); } catch (e) { /* არაფერი */ }
+    var url = URL.createObjectURL(f);
+    p.dataset.url = url;
+    p.src = url;
+    var pr = p.play();
+    if (pr && pr.catch) pr.catch(function () { toast('დააჭირე დაკვრას'); });
+  }
+
+  /* ---------- ღილაკები ---------- */
+  function wire() {
+    $('noiseBtn').addEventListener('click', toggleNoise);
+    $('fileIn').addEventListener('change', onFile);
+    $('player').addEventListener('play', function () { ensureCtx(); stopNoise(); });
+    $('vol').addEventListener('input', setVolume);
+
+    $('abSeg').addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (!b) return;
+      bypass = b.dataset.ab === 'off';
+      var all = $('abSeg').querySelectorAll('button');
+      for (var i = 0; i < all.length; i++) all[i].classList.toggle('on', all[i] === b);
+      applyAudio();
+    });
+
+    $('saveMine').addEventListener('click', function () {
+      if (!work) return;
+      mine = clone(work);
+      lsSet(K_MINE, mine);
+      activeKey = 'mine';
+      lsSet(K_WORK, { key: activeKey, profile: work });
+      renderLists();
+      toast('შეინახა ამ iPhone-ზე');
+    });
+
+    $('resetBtn').addEventListener('click', function () {
+      if (!base) return;
+      work = clone(base);
+      lsSet(K_WORK, { key: activeKey, profile: work });
+      bindWork();
+      applyAudio();
+    });
+
+    $('importBtn').addEventListener('click', function () {
+      var r = importCode($('codeIn').value);
+      if (!r) return;
+      $('codeIn').value = '';
+      if (r === 'new') { choose('a:sel', androidSelection(sync.data)); toast('მონაცემები მიღებულია ✓'); }
+      else { renderLists(); toast('ეს მონაცემები უკვე გაქვს'); }
+    });
+
+    $('pasteBtn').addEventListener('click', function () {
+      if (!navigator.clipboard || !navigator.clipboard.readText) { toast('გრძელი დაჭერით ჩასვი ველში'); return; }
+      navigator.clipboard.readText().then(function (t) { $('codeIn').value = t; }).catch(function () { toast('გრძელი დაჭერით ჩასვი ველში'); });
+    });
+
+    window.addEventListener('resize', drawCurve);
+    window.addEventListener('orientationchange', function () { setTimeout(drawCurve, 250); });
+  }
+
+  /* ---------- გაშვება ---------- */
+  function init() {
+    buildSliders();
+    wire();
+
+    var fresh = false;
+    try {
+      var d = new URLSearchParams(location.search).get('d');
+      if (d) {
+        var r = importCode(d);
+        fresh = r === 'new';
+      }
+    } catch (e) { /* ძველი ბრაუზერი */ }
+
+    var saved = lsGet(K_WORK);
+    if (fresh && sync && sync.data) {
+      choose('a:sel', androidSelection(sync.data));
+      toast('მონაცემები Android-იდან მიღებულია ✓');
+    } else if (saved && saved.profile && saved.profile.gains) {
+      activeKey = saved.key || '';
+      work = mk(saved.profile.id, saved.profile.name, saved.profile.desc,
+        saved.profile.gains.concat([saved.profile.bass, saved.profile.virt, saved.profile.loud]));
+      base = clone(work);
+      renderLists();
+      bindWork();
+    } else if (sync && sync.data) {
+      choose('a:sel', androidSelection(sync.data));
+    } else {
+      choose('p:fps', PRESETS[0]);
+    }
+
+    var standalone = window.navigator.standalone === true ||
+      (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    if (standalone) $('installCard').classList.add('hide');
+
+    if ('serviceWorker' in navigator && location.protocol === 'https:') {
+      navigator.serviceWorker.register('sw.js').catch(function () { /* არაუშავს */ });
+    }
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
